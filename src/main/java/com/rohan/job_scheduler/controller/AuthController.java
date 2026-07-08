@@ -1,6 +1,8 @@
 package com.rohan.job_scheduler.controller;
 
+import com.rohan.job_scheduler.dto.request.LoginRequest;
 import com.rohan.job_scheduler.dto.request.RegisterRequest;
+import com.rohan.job_scheduler.dto.response.AuthResponse;
 import com.rohan.job_scheduler.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,12 @@ public class AuthController {
         userService.register(request);
 
         return ResponseEntity.ok("User registered successfully.");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request){
+        AuthResponse res = userService.login(request);
+        return ResponseEntity.ok(res);
     }
 
 
