@@ -10,4 +10,10 @@ public interface JobService {
     JobResponse createJob(CreateJobRequest job);
 
     List<JobResponse> getMyJobs();
+
+    JobResponse getJobById(Long id);
+
+    JobResponse updateJob(Long id,CreateJobRequest job);
+
+    void deleteJob(Long id);
 }

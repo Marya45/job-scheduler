@@ -52,6 +52,37 @@ public class JobServiceImpl implements JobService {
                 .toList();
     }
 
+    @Override
+    public JobResponse getJobById(Long id) {
+        User currentUser = authenticationService.getCurrentUser();
+
+        Job job = jobRepository.findByIdAndCreatedBy(id,currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+
+        return mapToJobResponse(job);
+    }
+
+    @Override
+    public JobResponse updateJob(Long id, CreateJobRequest job) {
+        User currentUser = authenticationService.getCurrentUser();
+
+        Job savedJob = jobRepository.findByIdAndCreatedBy(id,currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+
+        savedJob.setName(job.getName());
+        savedJob.setCommand(job.getCommand());
+        savedJob.setScheduledAt(job.getScheduledAt());
+        jobRepository.save(savedJob);
+
+        return mapToJobResponse(savedJob);
+    }
+
+    @Override
+    public void deleteJob(Long id) {
+        User currentUser = authenticationService.getCurrentUser();
+        Job job = jobRepository.findByIdAndCreatedBy(id, currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+
+        jobRepository.delete(job);
+    }
+
     private JobResponse mapToJobResponse(Job job) {
         return JobResponse.builder()
                 .id(job.getId())
