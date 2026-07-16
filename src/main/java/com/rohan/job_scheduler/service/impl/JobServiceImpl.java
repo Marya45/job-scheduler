@@ -8,6 +8,7 @@ import com.rohan.job_scheduler.entity.JobStatus;
 import com.rohan.job_scheduler.entity.User;
 import com.rohan.job_scheduler.repository.JobRepository;
 import com.rohan.job_scheduler.service.AuthenticationService;
+import com.rohan.job_scheduler.service.JobExecutionService;
 import com.rohan.job_scheduler.service.JobService;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +19,12 @@ public class JobServiceImpl implements JobService {
 
     private final JobRepository jobRepository;
     private final AuthenticationService authenticationService;
+    private final JobExecutionService jobExecutionService;
 
-    public JobServiceImpl(JobRepository jobRepository, AuthenticationService authenticationService){
+    public JobServiceImpl(JobRepository jobRepository, AuthenticationService authenticationService, JobExecutionService jobExecutionService){
         this.jobRepository = jobRepository;
         this.authenticationService = authenticationService;
+        this.jobExecutionService = jobExecutionService;
     }
 
     @Override
@@ -81,6 +84,19 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findByIdAndCreatedBy(id, currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
 
         jobRepository.delete(job);
+    }
+
+    @Override
+    public void runJob(Long id) {
+        User currentUser = authenticationService.getCurrentUser();
+
+        Job job = jobRepository.findByIdAndCreatedBy(id, currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+
+        if (job.getStatus() != JobStatus.PENDING) {
+            throw new RuntimeException("Job cannot be executed");
+        }
+
+        jobExecutionService.execute(job);
     }
 
     private JobResponse mapToJobResponse(Job job) {

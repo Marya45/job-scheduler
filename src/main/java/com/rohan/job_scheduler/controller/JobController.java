@@ -48,5 +48,11 @@ public class JobController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/{id}/run")
+    public ResponseEntity<Void> runJob(@PathVariable Long id){
+        jobService.runJob(id);
+        return ResponseEntity.ok().build();
+    }
+
 
 }
