@@ -2,7 +2,6 @@ package com.rohan.job_scheduler.service.impl;
 
 import com.rohan.job_scheduler.dto.request.CreateJobRequest;
 import com.rohan.job_scheduler.dto.response.JobResponse;
-import com.rohan.job_scheduler.entity.CustomUserPrincipal;
 import com.rohan.job_scheduler.entity.Job;
 import com.rohan.job_scheduler.entity.JobStatus;
 import com.rohan.job_scheduler.entity.User;

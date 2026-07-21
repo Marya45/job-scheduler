@@ -27,6 +27,18 @@ public class JobExecutionServiceImpl implements JobExecutionService {
 
     }
 
+    @Override
+    public boolean claimJob(Job job) {
+        if (job.getStatus() != JobStatus.PENDING) {
+            return false;
+        }
+
+        job.setStatus(JobStatus.RUNNING);
+        jobRepository.save(job);
+
+        return true;
+    }
+
     private void executeInternal(Job job) {
 
         job.setStatus(JobStatus.RUNNING);

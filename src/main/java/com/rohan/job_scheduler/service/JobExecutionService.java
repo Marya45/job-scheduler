@@ -6,4 +6,5 @@ public interface JobExecutionService {
 
     void execute(Job job);
 
+    boolean claimJob(Job job);
 }
