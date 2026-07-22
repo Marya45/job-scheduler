@@ -1,7 +1,9 @@
 package com.rohan.job_scheduler.controller;
 
 import com.rohan.job_scheduler.dto.request.CreateJobRequest;
+import com.rohan.job_scheduler.dto.response.JobExecutionResponse;
 import com.rohan.job_scheduler.dto.response.JobResponse;
+import com.rohan.job_scheduler.service.JobExecutionService;
 import com.rohan.job_scheduler.service.JobService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +16,11 @@ import java.util.List;
 public class JobController {
 
     private final JobService jobService;
+    private final JobExecutionService jobExecutionService;
 
-    public JobController(JobService jobService) {
+    public JobController(JobService jobService, JobExecutionService jobExecutionService) {
         this.jobService = jobService;
+        this.jobExecutionService = jobExecutionService;
     }
 
     @PostMapping
@@ -52,6 +56,11 @@ public class JobController {
     public ResponseEntity<Void> runJob(@PathVariable Long id){
         jobService.runJob(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/executions")
+    public ResponseEntity<List<JobExecutionResponse>> getExecutionHistory(@PathVariable Long id){
+        return ResponseEntity.ok(jobExecutionService.getExecutionHistory(id));
     }
 
 
