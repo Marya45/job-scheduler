@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class JobExecutionServiceImpl implements JobExecutionService {
@@ -65,23 +66,33 @@ public class JobExecutionServiceImpl implements JobExecutionService {
                 .toList();
     }
 
-    private void executeJob(Job job) {
+    private void executeJob(Job job) throws InterruptedException {
 
-        JobExecution execution = createExecution(job);
-        markRunning(job);
+        int attempt = 0;
 
-        try {
-            executeCommand(job, execution);
-            markSuccess(job, execution);
-        }
-        catch (Exception e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
+        while(attempt <= job.getMaxRetries()){
+
+            JobExecution execution = createExecution(job);
+            markRunning(job);
+
+            try {
+                executeCommand(job, execution);
+                markSuccess(job, execution);
+                saveExecution(job, execution);
+                return;
             }
-            markFailure(job, execution, e);
-        }
-        finally {
-            saveExecution(job, execution);
+            catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                markFailure(job, execution, e);
+                saveExecution(job, execution);
+
+                Thread.sleep(5000);
+
+                attempt++;
+            }
+
         }
 
     }
@@ -110,10 +121,17 @@ public class JobExecutionServiceImpl implements JobExecutionService {
 
         Process process = processBuilder.start();
 
+        boolean finished = process.waitFor(30, TimeUnit.SECONDS);
+        if (!finished) {
+            process.destroyForcibly();
+            process.waitFor(); // wait for termination
+            throw new RuntimeException("Execution timed out.");
+        }
+
         String output = readStream(process.getInputStream());
         String error = readStream(process.getErrorStream());
 
-        int exitCode = process.waitFor();
+        int exitCode = process.exitValue();
         execution.setExitCode(exitCode);
 
         if (exitCode != 0) {
@@ -143,6 +161,15 @@ public class JobExecutionServiceImpl implements JobExecutionService {
         jobRepository.save(job);
         jobExecutionRepository.save(execution);
     }
+
+    private boolean shouldRetry(Job job) {
+        return job.getRetryCount() < job.getMaxRetries();
+    }
+
+    private void incrementRetryCount(Job job) {
+        job.setRetryCount(job.getRetryCount() + 1);
+    }
+
 
     private String readStream(InputStream inputStream) throws IOException{
         BufferedReader bufferedReader = new BufferedReader(

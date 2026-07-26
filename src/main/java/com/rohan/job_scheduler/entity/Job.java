@@ -2,8 +2,10 @@ package com.rohan.job_scheduler.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import tools.jackson.databind.ser.jdk.JDKKeySerializers;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,4 +52,7 @@ public class Job {
     )
     private List<JobExecution> executions = new ArrayList<>();
 
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer maxRetries = 3;
 }
