@@ -2,6 +2,7 @@ package com.rohan.job_scheduler.service.impl;
 
 import com.rohan.job_scheduler.dto.response.JobExecutionResponse;
 import com.rohan.job_scheduler.entity.*;
+import com.rohan.job_scheduler.exception.ResourceNotFoundException;
 import com.rohan.job_scheduler.repository.JobExecutionRepository;
 import com.rohan.job_scheduler.repository.JobRepository;
 import com.rohan.job_scheduler.service.AuthenticationService;
@@ -60,7 +61,7 @@ public class JobExecutionServiceImpl implements JobExecutionService {
     @Override
     public List<JobExecutionResponse> getExecutionHistory(Long jobId) {
         User currentUser = authenticationService.getCurrentUser();
-        Job job = jobRepository.findByIdAndCreatedBy(jobId, currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+        Job job = jobRepository.findByIdAndCreatedBy(jobId, currentUser).orElseThrow(() -> new ResourceNotFoundException("No Job found"));
 
         List<JobExecution> executions = jobExecutionRepository.findByJobOrderByStartedAtDesc(job);
 

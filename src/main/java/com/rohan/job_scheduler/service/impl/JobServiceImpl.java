@@ -5,6 +5,7 @@ import com.rohan.job_scheduler.dto.response.JobResponse;
 import com.rohan.job_scheduler.entity.Job;
 import com.rohan.job_scheduler.entity.JobStatus;
 import com.rohan.job_scheduler.entity.User;
+import com.rohan.job_scheduler.exception.ResourceNotFoundException;
 import com.rohan.job_scheduler.repository.JobRepository;
 import com.rohan.job_scheduler.service.AuthenticationService;
 import com.rohan.job_scheduler.service.JobExecutionService;
@@ -59,7 +60,7 @@ public class JobServiceImpl implements JobService {
     public JobResponse getJobById(Long id) {
         User currentUser = authenticationService.getCurrentUser();
 
-        Job job = jobRepository.findByIdAndCreatedBy(id,currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+        Job job = jobRepository.findByIdAndCreatedBy(id,currentUser).orElseThrow(() -> new ResourceNotFoundException("No Job found"));
 
         return mapToJobResponse(job);
     }
@@ -68,7 +69,7 @@ public class JobServiceImpl implements JobService {
     public JobResponse updateJob(Long id, CreateJobRequest job) {
         User currentUser = authenticationService.getCurrentUser();
 
-        Job savedJob = jobRepository.findByIdAndCreatedBy(id,currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+        Job savedJob = jobRepository.findByIdAndCreatedBy(id,currentUser).orElseThrow(() -> new ResourceNotFoundException("No Job found"));
 
         savedJob.setName(job.getName());
         savedJob.setCommand(job.getCommand());
@@ -81,7 +82,7 @@ public class JobServiceImpl implements JobService {
     @Override
     public void deleteJob(Long id) {
         User currentUser = authenticationService.getCurrentUser();
-        Job job = jobRepository.findByIdAndCreatedBy(id, currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+        Job job = jobRepository.findByIdAndCreatedBy(id, currentUser).orElseThrow(() -> new ResourceNotFoundException("No Job found"));
 
         jobRepository.delete(job);
     }
@@ -90,7 +91,7 @@ public class JobServiceImpl implements JobService {
     public void runJob(Long id) {
         User currentUser = authenticationService.getCurrentUser();
 
-        Job job = jobRepository.findByIdAndCreatedBy(id, currentUser).orElseThrow(() -> new RuntimeException("No Job found"));
+        Job job = jobRepository.findByIdAndCreatedBy(id, currentUser).orElseThrow(() -> new ResourceNotFoundException("No Job found"));
 
         if (job.getStatus() != JobStatus.PENDING) {
             throw new RuntimeException("Job cannot be executed");

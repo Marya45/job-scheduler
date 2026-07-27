@@ -5,6 +5,8 @@ import com.rohan.job_scheduler.dto.request.RegisterRequest;
 import com.rohan.job_scheduler.dto.response.AuthResponse;
 import com.rohan.job_scheduler.entity.Role;
 import com.rohan.job_scheduler.entity.User;
+import com.rohan.job_scheduler.exception.BadRequestException;
+import com.rohan.job_scheduler.exception.UnauthorizedException;
 import com.rohan.job_scheduler.repository.UserRepository;
 import com.rohan.job_scheduler.security.JwtService;
 import com.rohan.job_scheduler.service.UserService;
@@ -28,11 +30,11 @@ public class UserServiceImpl implements UserService {
     public void register(RegisterRequest request) {
 
         if(userRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException("User already exists with this email.");
+            throw new UnauthorizedException("User already exists with this email.");
         }
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists.");
+            throw new BadRequestException("Username already exists.");
         }
 
         User user = User.builder()
@@ -49,10 +51,10 @@ public class UserServiceImpl implements UserService {
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
-            throw new RuntimeException("Invalid Email or Password");
+            throw new UnauthorizedException("Invalid Email or Password");
         }
 
         String token = jwtService.generateToken(user);
