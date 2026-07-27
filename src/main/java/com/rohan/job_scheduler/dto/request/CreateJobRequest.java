@@ -1,5 +1,6 @@
 package com.rohan.job_scheduler.dto.request;
 
+import com.rohan.job_scheduler.entity.RecurrenceType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -22,4 +23,6 @@ public class CreateJobRequest {
     @NotNull(message = "Scheduling time is required")
     private LocalDateTime scheduledAt;
 
+    @Builder.Default
+    private RecurrenceType recurrenceType = RecurrenceType.NONE;
 }

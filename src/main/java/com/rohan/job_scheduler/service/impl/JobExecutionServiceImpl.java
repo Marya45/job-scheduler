@@ -1,10 +1,7 @@
 package com.rohan.job_scheduler.service.impl;
 
 import com.rohan.job_scheduler.dto.response.JobExecutionResponse;
-import com.rohan.job_scheduler.entity.Job;
-import com.rohan.job_scheduler.entity.JobExecution;
-import com.rohan.job_scheduler.entity.JobStatus;
-import com.rohan.job_scheduler.entity.User;
+import com.rohan.job_scheduler.entity.*;
 import com.rohan.job_scheduler.repository.JobExecutionRepository;
 import com.rohan.job_scheduler.repository.JobRepository;
 import com.rohan.job_scheduler.service.AuthenticationService;
@@ -39,7 +36,13 @@ public class JobExecutionServiceImpl implements JobExecutionService {
 
     @Override
     public void execute(Job job) {
-        executorService.submit(() -> executeJob(job));
+        executorService.submit(() -> {
+            try {
+                executeJob(job);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
@@ -143,9 +146,13 @@ public class JobExecutionServiceImpl implements JobExecutionService {
     }
 
     private void markSuccess(Job job,JobExecution execution){
-        job.setStatus(JobStatus.SUCCESS);
-        execution.setCompletedAt(LocalDateTime.now());
         execution.setStatus(JobStatus.SUCCESS);
+        execution.setCompletedAt(LocalDateTime.now());
+        if (job.getRecurrenceType() == RecurrenceType.NONE) {
+            job.setStatus(JobStatus.SUCCESS);
+        } else {
+            scheduleNextRun(job);
+        }
         execution.setExitCode(0);
     }
 
@@ -162,14 +169,26 @@ public class JobExecutionServiceImpl implements JobExecutionService {
         jobExecutionRepository.save(execution);
     }
 
-    private boolean shouldRetry(Job job) {
-        return job.getRetryCount() < job.getMaxRetries();
-    }
+    private void scheduleNextRun(Job job) {
 
-    private void incrementRetryCount(Job job) {
-        job.setRetryCount(job.getRetryCount() + 1);
-    }
+        switch (job.getRecurrenceType()) {
 
+            case EVERY_MINUTE ->
+                    job.setScheduledAt(LocalDateTime.now().plusMinutes(1));
+
+            case HOURLY ->
+                    job.setScheduledAt(LocalDateTime.now().plusHours(1));
+
+            case DAILY ->
+                    job.setScheduledAt(LocalDateTime.now().plusDays(1));
+
+            case NONE -> {
+                return;
+            }
+        }
+
+        job.setStatus(JobStatus.PENDING);
+    }
 
     private String readStream(InputStream inputStream) throws IOException{
         BufferedReader bufferedReader = new BufferedReader(

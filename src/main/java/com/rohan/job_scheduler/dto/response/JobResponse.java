@@ -1,6 +1,7 @@
 package com.rohan.job_scheduler.dto.response;
 
 import com.rohan.job_scheduler.entity.JobStatus;
+import com.rohan.job_scheduler.entity.RecurrenceType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -25,5 +26,7 @@ public class JobResponse {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    private RecurrenceType recurrenceType;
 
 }

@@ -55,4 +55,9 @@ public class Job {
     @Builder.Default
     @Column(nullable = false)
     private Integer maxRetries = 3;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false,columnDefinition = "VARCHAR(255) DEFAULT 'NONE'")
+    private RecurrenceType recurrenceType = RecurrenceType.NONE;
 }

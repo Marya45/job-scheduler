@@ -36,6 +36,7 @@ public class JobServiceImpl implements JobService {
                 .scheduledAt(request.getScheduledAt())
                 .status(JobStatus.PENDING)
                 .createdBy(currentUser)
+                .recurrenceType(request.getRecurrenceType())
                 .build();
 
         Job savedJob = jobRepository.save(job);
@@ -107,6 +108,7 @@ public class JobServiceImpl implements JobService {
                 .scheduledAt(job.getScheduledAt())
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
+                .recurrenceType(job.getRecurrenceType())
                 .build();
     }
 
