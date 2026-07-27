@@ -1,0 +1,43 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: job-scheduler-db
+
+    env_file:
+      - .env
+
+    environment:
+      POSTGRES_DB: job-scheduler
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+
+    container_name: job-scheduler-app
+
+    depends_on:
+      - postgres
+
+    env_file:
+      - .env
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/job-scheduler
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1507
+      JWT_SECRET: ThisIsMyVeryLongSecretKeyForDevelopment123456789
+      JWT_EXPIRATION: 3600000
+
+volumes:
+  postgres_data:
