@@ -4,16 +4,19 @@ import com.rohan.job_scheduler.dto.request.CreateJobRequest;
 import com.rohan.job_scheduler.dto.response.JobResponse;
 import com.rohan.job_scheduler.entity.Job;
 import com.rohan.job_scheduler.entity.JobStatus;
+import com.rohan.job_scheduler.entity.RecurrenceType;
 import com.rohan.job_scheduler.entity.User;
 import com.rohan.job_scheduler.exception.ResourceNotFoundException;
 import com.rohan.job_scheduler.repository.JobRepository;
 import com.rohan.job_scheduler.service.AuthenticationService;
 import com.rohan.job_scheduler.service.JobExecutionService;
 import com.rohan.job_scheduler.service.JobService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class JobServiceImpl implements JobService {
 
@@ -31,14 +34,24 @@ public class JobServiceImpl implements JobService {
     public JobResponse createJob(CreateJobRequest request) {
         User currentUser = authenticationService.getCurrentUser();
 
+        log.info("Recurrence Type = {} ",request.getRecurrenceType());
+        System.out.println("Recurrence Type = " + request.getRecurrenceType());
+
         Job job = Job.builder()
                 .name(request.getName())
                 .command(request.getCommand())
                 .scheduledAt(request.getScheduledAt())
                 .status(JobStatus.PENDING)
                 .createdBy(currentUser)
-                .recurrenceType(request.getRecurrenceType())
+                .recurrenceType(request.getRecurrenceType() == null
+                        ? RecurrenceType.NONE
+                        : request.getRecurrenceType()
+                )
                 .build();
+
+        log.info("Recurrence Type = {} ",job.getRecurrenceType());
+        System.out.println("Job Recurrence Type = " + job.getRecurrenceType());
+
 
         Job savedJob = jobRepository.save(job);
 
@@ -97,7 +110,7 @@ public class JobServiceImpl implements JobService {
             throw new RuntimeException("Job cannot be executed");
         }
 
-        jobExecutionService.execute(job);
+        jobExecutionService.execute(job.getId());
     }
 
     private JobResponse mapToJobResponse(Job job) {

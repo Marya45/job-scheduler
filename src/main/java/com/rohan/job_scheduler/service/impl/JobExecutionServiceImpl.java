@@ -36,7 +36,10 @@ public class JobExecutionServiceImpl implements JobExecutionService {
 
 
     @Override
-    public void execute(Job job) {
+    public void execute(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
         executorService.submit(() -> {
             try {
                 executeJob(job);
@@ -116,12 +119,15 @@ public class JobExecutionServiceImpl implements JobExecutionService {
     }
 
     private void executeCommand(Job job,JobExecution execution) throws IOException, InterruptedException {
+        String os = System.getProperty("os.name").toLowerCase();
 
-        ProcessBuilder processBuilder = new ProcessBuilder(
-                "cmd",
-                "/c",
-                job.getCommand()
-        );
+        ProcessBuilder processBuilder;
+
+        if (os.contains("win")) {
+            processBuilder = new ProcessBuilder("cmd", "/c",job.getCommand());
+        } else {
+            processBuilder = new ProcessBuilder("sh", "-c", job.getCommand());
+        }
 
         Process process = processBuilder.start();
 

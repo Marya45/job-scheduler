@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface JobExecutionService {
 
-    void execute(Job job);
+    void execute(Long jobId);
 
     boolean claimJob(Job job);
 
