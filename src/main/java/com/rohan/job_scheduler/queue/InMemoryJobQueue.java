@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@Component
+//@Component
 public class InMemoryJobQueue implements JobQueue{
 
     private final BlockingQueue<Long> queue = new LinkedBlockingQueue<>();
