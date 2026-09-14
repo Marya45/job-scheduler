@@ -56,6 +56,8 @@ public class JobWorker {
 
         log.info("Worker received job {} from RabbitMQ", jobId);
 
+        boolean claimed = jobExecutionService.claimJob(jobId);
+
         jobExecutionService.executeSynchronously(jobId);
     }
 

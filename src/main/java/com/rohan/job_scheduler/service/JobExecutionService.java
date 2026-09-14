@@ -8,7 +8,7 @@ public interface JobExecutionService {
 
     void execute(Long jobId);
 
-    boolean claimJob(Job job);
+    boolean claimJob(Long jobId);
 
     List<JobExecutionResponse> getExecutionHistory(Long jobId);
 

@@ -7,6 +7,7 @@ import com.rohan.job_scheduler.repository.JobExecutionRepository;
 import com.rohan.job_scheduler.repository.JobRepository;
 import com.rohan.job_scheduler.service.AuthenticationService;
 import com.rohan.job_scheduler.service.JobExecutionService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.InputBuffer;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class JobExecutionServiceImpl implements JobExecutionService {
 
@@ -50,15 +52,15 @@ public class JobExecutionServiceImpl implements JobExecutionService {
     }
 
     @Override
-    public boolean claimJob(Job job) {
-        if (job.getStatus() != JobStatus.PENDING) {
-            return false;
-        }
+    public boolean claimJob(Long jobId) {
 
-        job.setStatus(JobStatus.RUNNING);
-        jobRepository.save(job);
+        int updated = jobRepository.updateStatusIfCurrentStatus(
+                jobId,
+                JobStatus.PENDING,
+                JobStatus.RUNNING
+        );
 
-        return true;
+        return updated == 1;
     }
 
     @Override
@@ -77,6 +79,11 @@ public class JobExecutionServiceImpl implements JobExecutionService {
     public void executeSynchronously(Long jobId) {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
+        if (job.getStatus() == JobStatus.SUCCESS) {
+            log.info("Job {} already completed. Skipping duplicate delivery.", jobId);
+            return;
+        }
 
         try {
             executeJob(job);

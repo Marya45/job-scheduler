@@ -39,7 +39,7 @@ public class SchedulerService {
 
         for(Job job: jobs){
             log.info("Submitting job {} for execution", job.getId());
-            if(jobExecutionService.claimJob(job)){
+            if(jobExecutionService.claimJob(job.getId())){
 //                jobExecutionService.execute(job);
                 jobQueue.submit(job.getId());
             }
