@@ -11,4 +11,6 @@ public interface JobExecutionService {
     boolean claimJob(Job job);
 
     List<JobExecutionResponse> getExecutionHistory(Long jobId);
+
+    void executeSynchronously(Long jobId); // RabbitMQ worker use
 }

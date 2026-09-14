@@ -49,12 +49,14 @@ public class JobWorker {
 //    }
 
 
-    @RabbitListener(queues = RabbitMQConfig.JOB_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.JOB_QUEUE,
+            concurrency = "3"
+    )
     public void consume(Long jobId) {
 
         log.info("Worker received job {} from RabbitMQ", jobId);
 
-        jobExecutionService.execute(jobId);
+        jobExecutionService.executeSynchronously(jobId);
     }
 
 

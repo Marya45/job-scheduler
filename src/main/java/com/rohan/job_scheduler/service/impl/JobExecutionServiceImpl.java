@@ -73,6 +73,18 @@ public class JobExecutionServiceImpl implements JobExecutionService {
                 .toList();
     }
 
+    @Override
+    public void executeSynchronously(Long jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+
+        try {
+            executeJob(job);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void executeJob(Job job) throws InterruptedException {
 
         int attempt = 0;
@@ -98,6 +110,15 @@ public class JobExecutionServiceImpl implements JobExecutionService {
                 Thread.sleep(5000);
 
                 attempt++;
+
+                if (attempt > job.getMaxRetries()) {
+
+                    throw new RuntimeException(
+                            "Job failed after all retry attempts",
+                            e
+                    );
+                }
+
             }
 
         }
