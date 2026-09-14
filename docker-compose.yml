@@ -52,5 +52,30 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
 
+
+  worker1:
+    build: .
+    container_name: job-scheduler-worker-1
+    depends_on:
+      - postgres
+      - rabbitmq
+    env_file:
+      - .env
+    environment:
+      WORKER_ENABLED: "true"
+      SCHEDULER_ENABLED: "false"
+
+  worker2:
+    build: .
+    container_name: job-scheduler-worker-2
+    depends_on:
+      - postgres
+      - rabbitmq
+    env_file:
+      - .env
+    environment:
+      WORKER_ENABLED: "true"
+      SCHEDULER_ENABLED: "false"
+
 volumes:
   postgres_data:

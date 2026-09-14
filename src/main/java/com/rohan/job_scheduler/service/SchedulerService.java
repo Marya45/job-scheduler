@@ -5,6 +5,7 @@ import com.rohan.job_scheduler.entity.JobStatus;
 import com.rohan.job_scheduler.queue.JobQueue;
 import com.rohan.job_scheduler.repository.JobRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,11 @@ import java.util.List;
 
 @Service
 @Slf4j
+@ConditionalOnProperty(
+        name = "app.scheduler.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
 public class SchedulerService {
 
     private final JobRepository jobRepository;
